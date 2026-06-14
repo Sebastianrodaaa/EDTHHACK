@@ -19,9 +19,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import config
 from adapters.acoustic import SimulatedAcousticAdapter
+from adapters.vision import SimulatedVisionAdapter
 from core.acoustic_node import AcousticNode
 from core.event_bus import EventBus
 from core.state import SystemState
+from core.vision_worker import VisionWorker
 from gateway.routes import router
 from gateway.ws import ConnectionManager
 from models import OperatorAction
@@ -50,13 +52,20 @@ class AppContext:
         self.engine = ScenarioEngine(
             self.acoustic_adapter, self.acoustic_node, self.state
         )
+        # Vision adapter pulls scripted responses from the active scenario.
+        self.vision_adapter = SimulatedVisionAdapter(
+            response_provider=self.engine.next_vision_response
+        )
+        self.vision_worker = VisionWorker(self.bus, self.vision_adapter, self.state)
         self.manager = ConnectionManager(self.bus, self.state)
 
     def start(self) -> None:
         self.manager.start_pumps()
+        self.vision_worker.start()
 
     async def shutdown(self) -> None:
         await self.engine.stop()
+        await self.vision_worker.stop()
         await self.manager.stop_pumps()
 
     async def handle_operator_action(self, action: OperatorAction) -> dict:

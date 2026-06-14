@@ -40,6 +40,9 @@ yarn-error.*
 /ios
 /android
 
+# cursor agent skill cache
+.cursor/.agents/
+
 # python backend
 backend/.venv/
 **/__pycache__/

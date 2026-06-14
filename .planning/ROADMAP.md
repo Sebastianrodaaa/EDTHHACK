@@ -13,7 +13,7 @@ Five phases that follow the hard causal build order imposed by the sensor fusion
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Backend Skeleton + Acoustic Simulation** - FastAPI backbone, Pydantic event schema, WebSocket manager with ring buffer, simulated acoustic pipeline, scenario player
-- [ ] **Phase 2: Vision Pipeline + CV Mock** - Vision adapter seam, SimulatedVisionAdapter with CV_MOCK_MODE, acoustic→vision trigger wired end-to-end
+- [x] **Phase 2: Vision Pipeline + CV Mock** - Vision adapter seam, SimulatedVisionAdapter with CV_MOCK_MODE, acoustic→vision trigger wired end-to-end
 - [ ] **Phase 3: Fusion Engine + Escalation** - Calibrated late fusion, 4-level threat enum, escalation state machine, operator confirmation REST + audit log
 - [ ] **Phase 4: Mobile C2 Integration** - useServerEvents hook, live zustand store, ThreatPanel, CONFIRM/DISMISS controls, sensor status chips
 - [ ] **Phase 5: Target Tracking + Demo Hardening** - Simulated target track, mini-map overlay, reset button, false-alarm scenario, full end-to-end run
