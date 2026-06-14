@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-06-14)
 
 **Core value:** When a drone-like sound is detected, the operator gets a fused (sound + vision) confidence-scored threat assessment and a clear, escalating recommendation — fast, with the human always in control of the final action.
-**Current focus:** Phase 1 — Backend Skeleton + Acoustic Simulation
+**Current focus:** Phase 2 — Vision Pipeline + CV Mock
 
 ## Current Position
 
-Phase: 1 of 5 (Backend Skeleton + Acoustic Simulation)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-06-14 — Roadmap created; 30 v1 requirements mapped across 5 phases
+Phase: 2 of 5 (Vision Pipeline + CV Mock)
+Plan: Phase 1 complete (smoke test PASS)
+Status: Phase 1 done — building Phase 2
+Last activity: 2026-06-14 — Phase 1 backend skeleton + acoustic sim built & verified
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 

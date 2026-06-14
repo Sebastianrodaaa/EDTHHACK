@@ -1,0 +1,38 @@
+{
+  "id": "demo-alpha",
+  "name": "Drone approach — confirmed threat",
+  "description": "Ambient baseline, then a sustained drone-like acoustic signature that the vision pipeline confirms as a drone, escalating to alert-squad.",
+  "acoustic": [
+    { "t": 0.0, "label": "ambient", "intensity": 0.08, "drone_like": false },
+    { "t": 1.0, "label": "ambient", "intensity": 0.12, "drone_like": false },
+    { "t": 2.0, "label": "wind", "intensity": 0.22, "drone_like": false },
+    { "t": 3.0, "label": "ambient", "intensity": 0.10, "drone_like": false },
+    { "t": 4.0, "label": "drone", "intensity": 0.45, "drone_like": true },
+    { "t": 4.8, "label": "drone", "intensity": 0.58, "drone_like": true },
+    { "t": 5.6, "label": "drone", "intensity": 0.66, "drone_like": true },
+    { "t": 6.4, "label": "drone", "intensity": 0.74, "drone_like": true },
+    { "t": 7.2, "label": "drone", "intensity": 0.82, "drone_like": true },
+    { "t": 8.0, "label": "drone", "intensity": 0.88, "drone_like": true },
+    { "t": 9.0, "label": "drone", "intensity": 0.84, "drone_like": true },
+    { "t": 10.0, "label": "drone", "intensity": 0.80, "drone_like": true }
+  ],
+  "vision": {
+    "sequence": [
+      {
+        "classification": "drone",
+        "confidence": 0.91,
+        "bounding_box": { "x": 0.42, "y": 0.18, "w": 0.12, "h": 0.07 }
+      }
+    ],
+    "default": {
+      "classification": "drone",
+      "confidence": 0.88,
+      "bounding_box": { "x": 0.40, "y": 0.20, "w": 0.11, "h": 0.06 }
+    }
+  },
+  "track": {
+    "initial_bearing_deg": 312.0,
+    "initial_range_m": 480.0,
+    "closing_speed_mps": 14.0
+  }
+}
