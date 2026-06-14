@@ -3,13 +3,20 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { AcousticOrb } from "./src/components/AcousticOrb";
 import { ReasoningTrail } from "./src/components/ReasoningTrail";
+import { ThreatPanel } from "./src/components/ThreatPanel";
 import { GlassCard } from "./src/components/GlassCard";
 import { useAppStore } from "./src/store";
+import { useServerEvents } from "./src/transport/useServerEvents";
+import { startScenario, resetScenario } from "./src/transport/api";
+import { DEMO_SCENARIO } from "./src/config";
 import { colors, radius, space, type } from "./src/theme";
 
 function Screen() {
+  useServerEvents();
+
   const mode = useAppStore((s) => s.mode);
-  const toggle = useAppStore((s) => s.toggle);
+  const connected = useAppStore((s) => s.connected);
+  const scenarioActive = useAppStore((s) => s.scenarioActive);
   const red = mode === "red";
   const accent = red ? colors.red : colors.green;
 
@@ -20,6 +27,25 @@ function Screen() {
       <View style={styles.header}>
         <GlassCard radius={radius.pill} style={styles.pill}>
           <View style={styles.pillInner}>
+            <View
+              style={[
+                styles.pillDot,
+                { backgroundColor: connected ? colors.green : colors.tertiary },
+              ]}
+            />
+            <Text
+              style={[
+                styles.pillText,
+                { color: connected ? colors.green : colors.tertiary },
+              ]}
+            >
+              {connected ? "Live" : "Offline"}
+            </Text>
+          </View>
+        </GlassCard>
+
+        <GlassCard radius={radius.pill} style={styles.pill}>
+          <View style={styles.pillInner}>
             <View style={[styles.pillDot, { backgroundColor: accent }]} />
             <Text style={[styles.pillText, { color: accent }]}>
               {red ? "Detection" : "Nominal"}
@@ -28,15 +54,33 @@ function Screen() {
         </GlassCard>
       </View>
 
-      <Pressable style={styles.orbSection} onPress={toggle}>
+      <View style={styles.orbSection}>
         <AcousticOrb mode={mode} />
         <Text style={[styles.orbStatus, { color: red ? colors.red : colors.label }]}>
           {red ? "Drone-like signature" : "Listening — clear"}
         </Text>
-        <Text style={styles.hint}>
-          Tap to {red ? "stand down" : "simulate detection"}
-        </Text>
-      </Pressable>
+
+        <View style={styles.controls}>
+          <Pressable
+            onPress={() => startScenario(DEMO_SCENARIO)}
+            style={({ pressed }) => [styles.ctrlBtn, styles.ctrlPrimary, pressed && styles.pressed]}
+          >
+            <Text style={styles.ctrlPrimaryText}>
+              {scenarioActive ? "Restart scenario" : "Run scenario"}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => resetScenario()}
+            style={({ pressed }) => [styles.ctrlBtn, styles.ctrlGhost, pressed && styles.pressed]}
+          >
+            <Text style={styles.ctrlGhostText}>Reset</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      <View style={styles.threatSection}>
+        <ThreatPanel />
+      </View>
 
       <View style={styles.trailSection}>
         <ReasoningTrail />
@@ -58,12 +102,12 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     paddingTop: space.sm,
     paddingBottom: space.xs,
   },
 
-  pill: { alignSelf: "flex-end" },
+  pill: { alignSelf: "flex-start" },
   pillInner: {
     flexDirection: "row",
     alignItems: "center",
@@ -74,9 +118,23 @@ const styles = StyleSheet.create({
   pillDot: { width: 8, height: 8, borderRadius: 999 },
   pillText: { ...type.footnote, fontWeight: "600" },
 
-  orbSection: { alignItems: "center", justifyContent: "center", gap: 4, paddingVertical: space.md },
-  orbStatus: { ...type.title3, marginTop: 4 },
-  hint: { ...type.subhead, color: colors.tertiary },
+  orbSection: { alignItems: "center", justifyContent: "center", gap: 4, paddingVertical: space.xs },
+  orbStatus: { ...type.title3, marginTop: 2 },
 
-  trailSection: { flex: 1, paddingBottom: space.md },
+  controls: { flexDirection: "row", gap: space.sm, marginTop: space.sm },
+  ctrlBtn: {
+    height: 40,
+    borderRadius: radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 22,
+  },
+  ctrlPrimary: { backgroundColor: colors.white },
+  ctrlPrimaryText: { ...type.subhead, fontWeight: "700", color: "#0B0B0D" },
+  ctrlGhost: { borderWidth: 1, borderColor: colors.hairlineStrong },
+  ctrlGhostText: { ...type.subhead, fontWeight: "600", color: colors.label },
+  pressed: { opacity: 0.6 },
+
+  threatSection: { paddingVertical: space.xs },
+  trailSection: { flex: 1, paddingBottom: space.md, paddingTop: space.xs },
 });

@@ -26,9 +26,67 @@ export interface Task {
   subtasks: Subtask[];
 }
 
+// -- server event types ----------------------------------------------------- //
+export type ThreatLevel = "low" | "medium" | "high" | "critical";
+export type RecAction =
+  | "monitor"
+  | "request_visual"
+  | "alert_squad"
+  | "prepare_countermeasures";
+export type OperatorActionType =
+  | "acknowledge"
+  | "confirm"
+  | "stand_down"
+  | "escalate";
+
+export interface Recommendation {
+  level: number;
+  action: RecAction;
+  message: string;
+  requires_confirmation: boolean;
+}
+
+export interface Tracking {
+  track_id?: string | null;
+  state: "acquiring" | "tracking" | "lost" | "terminated";
+  bearing_deg: number;
+  range_m?: number | null;
+  speed_mps?: number | null;
+  confidence: number;
+  last_updated?: string;
+}
+
+export interface Assessment {
+  id: string;
+  threat_level: ThreatLevel;
+  confidence: number;
+  acoustic_confidence: number;
+  vision_confidence: number | null;
+  source_mode: "fused" | "acoustic_only";
+  recommendation: Recommendation;
+  tracking: Tracking | null;
+}
+
+export type Subsystems = Record<string, string>;
+
+type ServerMessage = Record<string, any> & { type: string };
+
 interface AppState {
   mode: OrbMode;
   tasks: Task[];
+  // live server-driven state
+  connected: boolean;
+  threatLevel: ThreatLevel;
+  assessment: Assessment | null;
+  tracking: Tracking | null;
+  subsystems: Subsystems;
+  scenarioActive: boolean;
+  scenarioId: string | null;
+  // actions
+  setConnected: (c: boolean) => void;
+  ingest: (msg: ServerMessage) => void;
+  resetLive: () => void;
+  // local offline simulation (fallback when no backend)
   trigger: () => void;
   standDown: () => void;
   toggle: () => void;
@@ -221,9 +279,91 @@ function clearPending() {
   pending = [];
 }
 
+const DEFAULT_SUBSYSTEMS: Subsystems = {
+  acoustic: "online",
+  vision: "standby",
+  fusion: "online",
+  tracking: "standby",
+};
+
 export const useAppStore = create<AppState>((set, get) => ({
   mode: "white",
   tasks: buildTasks(),
+  connected: false,
+  threatLevel: "low",
+  assessment: null,
+  tracking: null,
+  subsystems: DEFAULT_SUBSYSTEMS,
+  scenarioActive: false,
+  scenarioId: null,
+
+  setConnected: (c) => set({ connected: c }),
+
+  ingest: (msg) => {
+    switch (msg.type) {
+      case "state_snapshot": {
+        set({
+          mode: msg.orb_mode ?? get().mode,
+          threatLevel: msg.threat_level ?? get().threatLevel,
+          tasks:
+            Array.isArray(msg.reasoning_steps) && msg.reasoning_steps.length > 0
+              ? (msg.reasoning_steps as Task[])
+              : get().tasks,
+          assessment: msg.latest_assessment ?? get().assessment,
+          tracking: msg.tracking ?? get().tracking,
+          subsystems: msg.subsystems ?? get().subsystems,
+          scenarioActive: !!msg.scenario_active,
+          scenarioId: msg.scenario_id ?? null,
+        });
+        break;
+      }
+      case "fused_assessment": {
+        set({
+          assessment: msg as unknown as Assessment,
+          threatLevel: msg.threat_level,
+          tracking: msg.tracking ?? get().tracking,
+          mode: msg.threat_level === "low" ? "white" : "red",
+        });
+        break;
+      }
+      case "track_update": {
+        const prev = get().tracking;
+        set({
+          tracking: {
+            ...(prev ?? { state: "acquiring", bearing_deg: 0, confidence: 0 }),
+            track_id: msg.track_id,
+            state: msg.state,
+            bearing_deg: msg.bearing_deg,
+            range_m: msg.range_m,
+            speed_mps: msg.speed_mps,
+            confidence: msg.confidence,
+            last_updated: msg.ts,
+          },
+        });
+        break;
+      }
+      case "state_sync": {
+        // Replay buffered events in order to catch up after a reconnect.
+        const events = (msg.events ?? []) as ServerMessage[];
+        events.forEach((e) => get().ingest(e));
+        break;
+      }
+      // acoustic_event / vision_event / vision_timeout: surfaced via the
+      // reasoning trail + assessment; no direct store mutation needed here.
+      default:
+        break;
+    }
+  },
+
+  resetLive: () =>
+    set({
+      mode: "white",
+      threatLevel: "low",
+      assessment: null,
+      tracking: null,
+      subsystems: DEFAULT_SUBSYSTEMS,
+      tasks: buildTasks(),
+    }),
 
   trigger: () => {
     if (get().mode === "red") return;
