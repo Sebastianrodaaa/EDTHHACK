@@ -111,41 +111,41 @@ Populated during roadmap creation. Each v1 requirement maps to exactly one phase
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ACO-01 | TBD | Pending |
-| ACO-02 | TBD | Pending |
-| ACO-03 | TBD | Pending |
-| ACO-04 | TBD | Pending |
-| ACO-05 | TBD | Pending |
-| VIS-01 | TBD | Pending |
-| VIS-02 | TBD | Pending |
-| VIS-03 | TBD | Pending |
-| VIS-04 | TBD | Pending |
-| FUS-01 | TBD | Pending |
-| FUS-02 | TBD | Pending |
-| FUS-03 | TBD | Pending |
-| FUS-04 | TBD | Pending |
-| ESC-01 | TBD | Pending |
-| ESC-02 | TBD | Pending |
-| ESC-03 | TBD | Pending |
-| ESC-04 | TBD | Pending |
-| ESC-05 | TBD | Pending |
-| TRK-01 | TBD | Pending |
-| TRK-02 | TBD | Pending |
-| TRK-03 | TBD | Pending |
-| UI-01 | TBD | Pending |
-| UI-02 | TBD | Pending |
-| UI-03 | TBD | Pending |
-| UI-04 | TBD | Pending |
-| UI-05 | TBD | Pending |
-| UI-06 | TBD | Pending |
-| SYS-01 | TBD | Pending |
-| SYS-02 | TBD | Pending |
-| SYS-03 | TBD | Pending |
+| ACO-01 | Phase 1 | Pending |
+| ACO-02 | Phase 1 | Pending |
+| ACO-03 | Phase 1 | Pending |
+| ACO-04 | Phase 1 | Pending |
+| ACO-05 | Phase 1 | Pending |
+| VIS-01 | Phase 2 | Pending |
+| VIS-02 | Phase 2 | Pending |
+| VIS-03 | Phase 2 | Pending |
+| VIS-04 | Phase 2 | Pending |
+| FUS-01 | Phase 3 | Pending |
+| FUS-02 | Phase 3 | Pending |
+| FUS-03 | Phase 3 | Pending |
+| FUS-04 | Phase 3 | Pending |
+| ESC-01 | Phase 3 | Pending |
+| ESC-02 | Phase 3 | Pending |
+| ESC-03 | Phase 3 | Pending |
+| ESC-04 | Phase 3 | Pending |
+| ESC-05 | Phase 3 | Pending |
+| TRK-01 | Phase 5 | Pending |
+| TRK-02 | Phase 5 | Pending |
+| TRK-03 | Phase 5 | Pending |
+| UI-01 | Phase 4 | Pending |
+| UI-02 | Phase 4 | Pending |
+| UI-03 | Phase 4 | Pending |
+| UI-04 | Phase 4 | Pending |
+| UI-05 | Phase 4 | Pending |
+| UI-06 | Phase 4 | Pending |
+| SYS-01 | Phase 1 | Pending |
+| SYS-02 | Phase 1 | Pending |
+| SYS-03 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 30 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 30 ⚠️
+- Mapped to phases: 30 ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-14*
