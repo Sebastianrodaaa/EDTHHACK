@@ -23,9 +23,11 @@ from core.reasoning import Stage
 from core.state import SystemState
 from models import (
     AcousticEvent,
+    CounterUASDispatch,
     FusedAssessment,
     Recommendation,
     Tracking,
+    VisionDetectionIn,
     VisionEvent,
     VisionTimeout,
     now_iso,
@@ -72,6 +74,21 @@ def recommend(threat_level: str, bearing_deg: float, source_mode: str) -> Recomm
         level=1, action="monitor",
         message="Low-confidence contact. Continue monitoring.",
         requires_confirmation=False)
+
+
+def recommend_dispatch(bearing_deg: float, dispatch: CounterUASDispatch) -> Recommendation:
+    bearing = f"{bearing_deg:.0f}°"
+    resources = ", ".join(dispatch.resources) if dispatch.resources else dispatch.effector
+    return Recommendation(
+        level=5,
+        action="dispatch_counter_uas",
+        message=(
+            f"Drone confirmed by live POV at {bearing}. Dispatch {dispatch.effector} "
+            f"to {dispatch.soldier_location}; resources: {resources}; "
+            f"ETA {dispatch.eta_s}s. Operator authorization required before effects."
+        ),
+        requires_confirmation=True,
+    )
 
 
 class FusionEngine:
@@ -155,6 +172,9 @@ class FusionEngine:
             log.info("VISION_PENDING — analysing POV feed")
 
     async def _on_vision_event(self, payload: dict) -> None:
+        if self._stage >= Stage.DISPATCH:
+            log.info("ignoring scripted vision_event after live-CV dispatch")
+            return
         event = VisionEvent(**payload)
         acoustic_conf = self._acoustic_conf.get(event.trigger_acoustic_id, 0.6)
 
@@ -188,6 +208,9 @@ class FusionEngine:
         await self._emit_assessment(assessment, vision_class=event.classification)
 
     async def _on_vision_timeout(self, payload: dict) -> None:
+        if self._stage >= Stage.DISPATCH:
+            log.info("ignoring vision_timeout after live-CV dispatch")
+            return
         timeout = VisionTimeout(**payload)
         acoustic_conf = self._acoustic_conf.get(timeout.trigger_acoustic_id, 0.6)
         # Acoustic-only: cap confidence so vision is always needed for top bands.
@@ -237,3 +260,98 @@ class FusionEngine:
             fused_conf=assessment.confidence,
             vision_class=vision_class,
         )
+
+    async def inject_real_vision(self, detection: VisionDetectionIn) -> dict:
+        """Escalate the live overlay's drone detection into the C2 pipeline."""
+        self.state.subsystems["vision"] = "online"
+
+        if (
+            detection.classification != "drone"
+            or detection.confidence < config.LIVE_CV_ESCALATION_CONF
+        ):
+            await self._advance(
+                Stage.VISION_CONFIRMED,
+                vision_class=detection.classification,
+            )
+            log.info(
+                "live vision ignored for dispatch: class=%s conf=%.2f",
+                detection.classification,
+                detection.confidence,
+            )
+            return {
+                "escalated": False,
+                "reason": "not_drone_or_low_confidence",
+                "classification": detection.classification,
+                "confidence": detection.confidence,
+            }
+
+        if self._stage >= Stage.DISPATCH and self.state.latest_assessment is not None:
+            return {
+                "escalated": False,
+                "reason": "already_dispatched",
+                "assessment_id": self.state.latest_assessment.id,
+            }
+
+        bearing = (
+            detection.bearing_deg
+            if detection.bearing_deg is not None
+            else self._bearing()
+        )
+        fused = min(0.99, detection.confidence)
+
+        tracking = Tracking(
+            state="acquiring",
+            bearing_deg=round(float(bearing), 1),
+            range_m=config.LIVE_CV_DEFAULT_RANGE_M,
+            speed_mps=12.0,
+            confidence=round(fused, 3),
+            last_updated=now_iso(),
+        )
+        dispatch = CounterUASDispatch(
+            effector=config.COUNTER_UAS_EFFECTOR,
+            resources=list(config.COUNTER_UAS_RESOURCES),
+            eta_s=config.COUNTER_UAS_ETA_S,
+            target_bearing_deg=tracking.bearing_deg,
+            soldier_location=config.SOLDIER_LOCATION,
+        )
+        assessment = FusedAssessment(
+            threat_level="critical",
+            confidence=round(fused, 3),
+            acoustic_confidence=0.0,
+            vision_confidence=round(detection.confidence, 3),
+            source_mode="vision_only",
+            recommendation=recommend_dispatch(tracking.bearing_deg, dispatch),
+            tracking=tracking,
+            dispatch=dispatch,
+        )
+
+        self.state.latest_assessment = assessment
+        self.state.threat_level = "critical"
+        self.state.tracking = tracking
+        self.state.orb_mode = "red"
+        self.state.subsystems["fusion"] = "online"
+        self.state.subsystems["tracking"] = "active"
+
+        log.info(
+            "LIVE CV dispatch: class=%s conf=%.2f bearing=%.1f eta=%ss",
+            detection.classification,
+            detection.confidence,
+            tracking.bearing_deg,
+            dispatch.eta_s,
+        )
+        await self.bus.publish("fused_assessment", assessment.model_dump())
+        await self._advance(
+            Stage.DISPATCH,
+            bearing_deg=tracking.bearing_deg,
+            fused_conf=assessment.confidence,
+            vision_class=detection.classification,
+            dispatch_effector=dispatch.effector,
+            soldier_location=dispatch.soldier_location,
+        )
+        return {
+            "escalated": True,
+            "assessment_id": assessment.id,
+            "threat_level": assessment.threat_level,
+            "recommendation": assessment.recommendation.action,
+            "dispatch": dispatch.model_dump(),
+        }

@@ -98,17 +98,34 @@ class VisionTimeout(BaseModel):
 
 ThreatLevel = Literal["low", "medium", "high", "critical"]
 
-# 1=monitor, 2=request_visual, 3=alert_squad, 4=prepare_countermeasures
+# 1=monitor, 2=request_visual, 3=alert_squad, 4=prepare_countermeasures,
+# 5=dispatch_counter_uas (stage counter-drone resources at the soldier)
 RecAction = Literal[
-    "monitor", "request_visual", "alert_squad", "prepare_countermeasures"
+    "monitor",
+    "request_visual",
+    "alert_squad",
+    "prepare_countermeasures",
+    "dispatch_counter_uas",
 ]
 
 
 class Recommendation(BaseModel):
-    level: int = Field(ge=1, le=4)
+    level: int = Field(ge=1, le=5)
     action: RecAction
     message: str
     requires_confirmation: bool = True
+
+
+class CounterUASDispatch(BaseModel):
+    """Counter-drone resources staged to the soldier's location."""
+
+    dispatched: bool = True
+    effector: str
+    resources: list[str] = Field(default_factory=list)
+    eta_s: int
+    target_bearing_deg: float = 0.0
+    soldier_location: str = ""
+    ts: str = Field(default_factory=now_iso)
 
 
 class Tracking(BaseModel):
@@ -129,9 +146,22 @@ class FusedAssessment(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     acoustic_confidence: float = Field(ge=0.0, le=1.0)
     vision_confidence: Optional[float] = None
-    source_mode: Literal["fused", "acoustic_only"] = "fused"
+    source_mode: Literal["fused", "acoustic_only", "vision_only"] = "fused"
     recommendation: Recommendation
     tracking: Optional[Tracking] = None
+    dispatch: Optional[CounterUASDispatch] = None
+
+
+class VisionDetectionIn(BaseModel):
+    """External live-CV detection posted by the laptop overlay process."""
+
+    type: Literal["vision_detection"] = "vision_detection"
+    ts: str = Field(default_factory=now_iso)
+    source: str = "live_overlay"
+    classification: VisionClass
+    confidence: float = Field(ge=0.0, le=1.0)
+    bounding_box: Optional[BoundingBox] = None
+    bearing_deg: Optional[float] = None
 
 
 # --------------------------------------------------------------------------- #

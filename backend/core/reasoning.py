@@ -19,6 +19,7 @@ class Stage(IntEnum):
     VISION_CONFIRMED = 3
     ASSESSED = 4
     TIMEOUT = 5
+    DISPATCH = 6
 
 
 def build_tasks() -> list[ReasoningTask]:
@@ -88,6 +89,22 @@ def build_tasks() -> list[ReasoningTask]:
                     status="pending", tools=["c2-advisor"]),
             ],
         ),
+        ReasoningTask(
+            id="5", title="Counter-UAS Response", level=2,
+            description="Stage counter-drone resources at the soldier's location.",
+            status="pending", dependencies=["4"],
+            subtasks=[
+                ReasoningSubtask(id="5.1", title="Package resources",
+                    description="Select the C-UAS response team and sensor / effector kit.",
+                    status="pending", tools=["resource-planner", "c-uas-roster"]),
+                ReasoningSubtask(id="5.2", title="Push soldier location",
+                    description="Attach the soldier grid and bearing to the dispatch order.",
+                    status="pending", tools=["blue-force-tracker", "geo-router"]),
+                ReasoningSubtask(id="5.3", title="Request operator confirmation",
+                    description="Stage resources now; require operator authorization before effects.",
+                    status="pending", tools=["rules-of-engagement", "audit-log"]),
+            ],
+        ),
     ]
 
 
@@ -111,7 +128,9 @@ def _set(tasks: list[ReasoningTask], task_id: str, status: str,
 
 def for_stage(stage: Stage, *, bearing_deg: float | None = None,
               fused_conf: float | None = None,
-              vision_class: str | None = None) -> list[ReasoningTask]:
+              vision_class: str | None = None,
+              dispatch_effector: str | None = None,
+              soldier_location: str | None = None) -> list[ReasoningTask]:
     """Build the full task list with statuses reflecting the given stage."""
     tasks = build_tasks()
 
@@ -154,6 +173,26 @@ def for_stage(stage: Stage, *, bearing_deg: float | None = None,
         _set(tasks, "4", "need-help", "4.3",
              description="Recommendation issued — awaiting operator decision.")
         _set(tasks, "4", "need-help")
+
+    if stage == Stage.DISPATCH:
+        _set(tasks, "4", "completed", "4.3",
+             description="Critical visual confirmation escalated to response staging.")
+        _set(tasks, "4", "completed")
+        _set(tasks, "5", "need-help")
+        _set(tasks, "5", "completed", "5.1",
+             description=(
+                 f"Resource package selected: {dispatch_effector}."
+                 if dispatch_effector else
+                 "Counter-UAS resource package selected."
+             ))
+        _set(tasks, "5", "completed", "5.2",
+             description=(
+                 f"Dispatch order routed to {soldier_location}."
+                 if soldier_location else
+                 "Dispatch order routed to soldier location."
+             ))
+        _set(tasks, "5", "need-help", "5.3",
+             description="Resources staged; operator authorization required before effects.")
 
     if stage == Stage.TIMEOUT:
         # Vision unavailable — acoustic-only path, ask operator for a visual.

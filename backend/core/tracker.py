@@ -14,6 +14,7 @@ import logging
 import math
 from typing import Callable, Optional
 
+import config
 from core.event_bus import EventBus
 from core.state import SystemState
 from models import TrackUpdate, new_id
@@ -60,14 +61,26 @@ class Tracker:
             level = payload.get("threat_level")
             source = payload.get("source_mode")
             already = self._track_task and not self._track_task.done()
-            if level in CONFIRMED_LEVELS and source == "fused" and not already:
+            if level in CONFIRMED_LEVELS and source in {"fused", "vision_only"} and not already:
                 self._track_task = asyncio.create_task(self._track_loop())
 
     async def _track_loop(self) -> None:
         plan = self._track_plan_provider() if self._track_plan_provider else None
         plan = plan or {}
-        bearing = float(plan.get("initial_bearing_deg", 0.0))
-        rng = float(plan.get("initial_range_m", 400.0))
+        bearing = float(
+            plan.get(
+                "initial_bearing_deg",
+                self.state.tracking.bearing_deg if self.state.tracking else 0.0,
+            )
+        )
+        rng = float(
+            plan.get(
+                "initial_range_m",
+                self.state.tracking.range_m
+                if self.state.tracking and self.state.tracking.range_m is not None
+                else config.LIVE_CV_DEFAULT_RANGE_M,
+            )
+        )
         speed = float(plan.get("closing_speed_mps", 12.0))
         track_id = f"trk-{new_id()[:8]}"
 

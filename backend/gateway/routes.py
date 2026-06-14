@@ -9,11 +9,12 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Header, HTTPException, Request
 
+import config
 from core import reasoning
 from core.reasoning import Stage
-from models import OperatorAction
+from models import OperatorAction, VisionDetectionIn
 
 log = logging.getLogger("gateway.routes")
 
@@ -90,4 +91,24 @@ async def operator_action(action: OperatorAction, request: Request):
         action.operator_id,
     )
     result = await ctx.handle_operator_action(action)
+    return {"ok": True, **result}
+
+
+@router.post("/api/vision/detection")
+async def ingest_vision_detection(
+    detection: VisionDetectionIn,
+    request: Request,
+    x_api_key: str = Header(default=""),
+):
+    """Live laptop CV overlay → backend fusion pipeline."""
+    if config.LIVE_CV_INGEST_KEY and x_api_key != config.LIVE_CV_INGEST_KEY:
+        raise HTTPException(status_code=401, detail="unauthorized")
+    ctx = _ctx(request)
+    log.info(
+        "live vision detection class=%s conf=%.2f source=%s",
+        detection.classification,
+        detection.confidence,
+        detection.source,
+    )
+    result = await ctx.fusion.inject_real_vision(detection)
     return {"ok": True, **result}

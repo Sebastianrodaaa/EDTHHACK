@@ -21,6 +21,7 @@ const ACTION_LABEL: Record<string, string> = {
   request_visual: "Request visual confirmation",
   alert_squad: "Alert squad",
   prepare_countermeasures: "Prepare countermeasures",
+  dispatch_counter_uas: "Dispatch counter-UAS resources",
 };
 
 function withAlpha(c: string, a: number) {
@@ -83,6 +84,12 @@ export function ThreatPanel() {
 
   const tint = THREAT_COLOR[threatLevel];
   const rec = assessment?.recommendation;
+  const sourceLabel =
+    assessment?.source_mode === "acoustic_only"
+      ? "acoustic-only"
+      : assessment?.source_mode === "vision_only"
+      ? "live POV vision"
+      : "sound + vision";
 
   const act = (action: OperatorActionType) =>
     sendOperatorAction(action, assessment?.id ?? null);
@@ -106,7 +113,8 @@ export function ThreatPanel() {
           {assessment.tracking ? (
             <Text style={styles.bearing}>
               Bearing {Math.round(assessment.tracking.bearing_deg)}°
-              {assessment.source_mode === "acoustic_only" ? "  ·  acoustic-only" : "  ·  sound + vision"}
+              {"  ·  "}
+              {sourceLabel}
             </Text>
           ) : null}
 
@@ -116,6 +124,19 @@ export function ThreatPanel() {
                 {ACTION_LABEL[rec.action] ?? rec.action}
               </Text>
               <Text style={styles.recMsg}>{rec.message}</Text>
+            </View>
+          ) : null}
+
+          {assessment.dispatch ? (
+            <View style={styles.dispatchCard}>
+              <Text style={styles.dispatchTitle}>Resource dispatch</Text>
+              <Text style={styles.dispatchLine}>{assessment.dispatch.effector}</Text>
+              <Text style={styles.dispatchMeta}>
+                {assessment.dispatch.resources.join(" · ")}
+              </Text>
+              <Text style={styles.dispatchMeta}>
+                {assessment.dispatch.soldier_location} · ETA {assessment.dispatch.eta_s}s
+              </Text>
             </View>
           ) : null}
 
@@ -196,6 +217,18 @@ const styles = StyleSheet.create({
   },
   recAction: { ...type.callout, fontWeight: "700" },
   recMsg: { ...type.footnote, color: colors.secondary, lineHeight: 18 },
+
+  dispatchCard: {
+    borderRadius: radius.control,
+    padding: space.md,
+    gap: 3,
+    backgroundColor: "rgba(255,59,48,0.10)",
+    borderWidth: 1,
+    borderColor: "rgba(255,59,48,0.30)",
+  },
+  dispatchTitle: { ...type.caption2, color: colors.red, fontWeight: "700", textTransform: "uppercase" },
+  dispatchLine: { ...type.callout, color: colors.label, fontWeight: "700" },
+  dispatchMeta: { ...type.footnote, color: colors.secondary },
 
   actions: { flexDirection: "row", gap: space.sm, marginTop: 4 },
   btn: {

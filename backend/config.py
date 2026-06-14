@@ -42,3 +42,21 @@ PORT = int(os.getenv("PORT", "8000"))
 CV_API_KEY = os.getenv("CV_API_KEY", "")
 CV_API_URL = os.getenv("CV_API_URL", "")
 RPI_HOST = os.getenv("RPI_HOST", "")
+
+# Live CV escalation / counter-UAS resource staging ------------------------- #
+LIVE_CV_INGEST_KEY = os.getenv("LIVE_CV_INGEST_KEY", "")
+LIVE_CV_ESCALATION_CONF = float(os.getenv("LIVE_CV_ESCALATION_CONF", "0.70"))
+LIVE_CV_DEFAULT_RANGE_M = float(os.getenv("LIVE_CV_DEFAULT_RANGE_M", "260.0"))
+SOLDIER_LOCATION = os.getenv("SOLDIER_LOCATION", "Soldier grid BR-042")
+COUNTER_UAS_EFFECTOR = os.getenv(
+    "COUNTER_UAS_EFFECTOR", "C-UAS response team"
+)
+COUNTER_UAS_RESOURCES: tuple[str, ...] = tuple(
+    item.strip()
+    for item in os.getenv(
+        "COUNTER_UAS_RESOURCES",
+        "RF scanner,jammer kit,spotter team",
+    ).split(",")
+    if item.strip()
+)
+COUNTER_UAS_ETA_S = int(os.getenv("COUNTER_UAS_ETA_S", "45"))

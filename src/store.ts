@@ -32,7 +32,8 @@ export type RecAction =
   | "monitor"
   | "request_visual"
   | "alert_squad"
-  | "prepare_countermeasures";
+  | "prepare_countermeasures"
+  | "dispatch_counter_uas";
 export type OperatorActionType =
   | "acknowledge"
   | "confirm"
@@ -44,6 +45,16 @@ export interface Recommendation {
   action: RecAction;
   message: string;
   requires_confirmation: boolean;
+}
+
+export interface CounterUASDispatch {
+  dispatched: boolean;
+  effector: string;
+  resources: string[];
+  eta_s: number;
+  target_bearing_deg: number;
+  soldier_location: string;
+  ts: string;
 }
 
 export interface Tracking {
@@ -62,9 +73,10 @@ export interface Assessment {
   confidence: number;
   acoustic_confidence: number;
   vision_confidence: number | null;
-  source_mode: "fused" | "acoustic_only";
+  source_mode: "fused" | "acoustic_only" | "vision_only";
   recommendation: Recommendation;
   tracking: Tracking | null;
+  dispatch?: CounterUASDispatch | null;
 }
 
 export type Subsystems = Record<string, string>;
@@ -219,6 +231,37 @@ function buildTasks(): Task[] {
         },
       ],
     },
+    {
+      id: "5",
+      title: "Counter-UAS Response",
+      description: "Stage counter-drone resources at the soldier's location.",
+      status: "pending",
+      level: 2,
+      dependencies: ["4"],
+      subtasks: [
+        {
+          id: "5.1",
+          title: "Package resources",
+          description: "Select the C-UAS response team and sensor / effector kit.",
+          status: "pending",
+          tools: ["resource-planner", "c-uas-roster"],
+        },
+        {
+          id: "5.2",
+          title: "Push soldier location",
+          description: "Attach the soldier grid and bearing to the dispatch order.",
+          status: "pending",
+          tools: ["blue-force-tracker", "geo-router"],
+        },
+        {
+          id: "5.3",
+          title: "Request operator confirmation",
+          description: "Stage resources now; require operator authorization before effects.",
+          status: "pending",
+          tools: ["rules-of-engagement", "audit-log"],
+        },
+      ],
+    },
   ];
 }
 
@@ -255,6 +298,15 @@ const DETECTION_CASCADE: StatusUpdate[] = [
   { delay: 5200, task: "4", sub: "4.2", status: "completed" },
   { delay: 5200, task: "4", sub: "4.3", status: "need-help" },
   { delay: 5200, task: "4", status: "need-help" },
+  { delay: 5750, task: "4", sub: "4.3", status: "completed" },
+  { delay: 5750, task: "4", status: "completed" },
+  { delay: 5750, task: "5", status: "in-progress" },
+  { delay: 5750, task: "5", sub: "5.1", status: "in-progress" },
+  { delay: 6300, task: "5", sub: "5.1", status: "completed" },
+  { delay: 6300, task: "5", sub: "5.2", status: "in-progress" },
+  { delay: 6850, task: "5", sub: "5.2", status: "completed" },
+  { delay: 6850, task: "5", sub: "5.3", status: "need-help" },
+  { delay: 6850, task: "5", status: "need-help" },
 ];
 
 function applyStatus(
