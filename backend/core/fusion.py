@@ -100,6 +100,7 @@ class FusionEngine:
         self._stage = Stage.LISTENING
         self._acoustic_conf: dict[str, float] = {}
         self._tasks: list = []
+        self._dispatch_active = False
 
     # -- lifecycle -------------------------------------------------------- #
     def start(self) -> None:
@@ -125,6 +126,7 @@ class FusionEngine:
     def reset(self) -> None:
         self._stage = Stage.LISTENING
         self._acoustic_conf.clear()
+        self._dispatch_active = False
 
     async def _consume(self, event_type: str, handler) -> None:
         async for payload in self.bus.stream(event_type):
@@ -265,6 +267,17 @@ class FusionEngine:
         """Escalate the live overlay's drone detection into the C2 pipeline."""
         self.state.subsystems["vision"] = "online"
 
+        if self._dispatch_active:
+            return {
+                "escalated": False,
+                "reason": "already_dispatched",
+                "assessment_id": (
+                    self.state.latest_assessment.id
+                    if self.state.latest_assessment is not None
+                    else None
+                ),
+            }
+
         if (
             detection.classification != "drone"
             or detection.confidence < config.LIVE_CV_ESCALATION_CONF
@@ -285,12 +298,9 @@ class FusionEngine:
                 "confidence": detection.confidence,
             }
 
-        if self._stage >= Stage.DISPATCH and self.state.latest_assessment is not None:
-            return {
-                "escalated": False,
-                "reason": "already_dispatched",
-                "assessment_id": self.state.latest_assessment.id,
-            }
+        # Set synchronously before any await so concurrent posts cannot double-dispatch.
+        self._dispatch_active = True
+        self._stage = Stage.DISPATCH
 
         bearing = (
             detection.bearing_deg

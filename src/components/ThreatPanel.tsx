@@ -107,7 +107,9 @@ export function ThreatPanel() {
       {assessment ? (
         <>
           <Meter label="Fused" value={assessment.confidence} tint={tint} />
-          <Meter label="Acoustic" value={assessment.acoustic_confidence} tint={colors.blue} />
+          {assessment.source_mode !== "vision_only" ? (
+            <Meter label="Acoustic" value={assessment.acoustic_confidence} tint={colors.blue} />
+          ) : null}
           <Meter label="Vision" value={assessment.vision_confidence} tint={colors.blue} />
 
           {assessment.tracking ? (

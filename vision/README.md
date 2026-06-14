@@ -44,6 +44,7 @@ overlay window then tracks that region live.
 .venv/bin/python live_overlay.py --no-drone        # COCO only (faster)
 .venv/bin/python live_overlay.py --source clip.mp4 # test on a recorded file (loops)
 .venv/bin/python live_overlay.py --no-backend      # overlay only; don't drive C2
+.venv/bin/python live_overlay.py --api-key demo123 # match backend LIVE_CV_INGEST_KEY
 ```
 
 Keys: `q`/`ESC` quit · `r` re-select region · `space` pause · `s` save snapshot.
@@ -56,3 +57,5 @@ Keys: `q`/`ESC` quit · `r` re-select region · `space` pause · `s` save snapsh
 - Pinned stack (Intel-Mac compatible): `torch==2.2.2`, `numpy<2`,
   `opencv-python==4.10.0.84`. See `requirements.txt`.
 - Models live in `vision/models/`.
+- For a guarded ingest endpoint, start the backend with `LIVE_CV_INGEST_KEY=...`
+  and pass the same value with `--api-key` (or set the same env var for the overlay).

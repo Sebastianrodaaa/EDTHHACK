@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { AcousticOrb } from "./src/components/AcousticOrb";
@@ -8,8 +8,6 @@ import { TrackingOverlay } from "./src/components/TrackingOverlay";
 import { GlassCard } from "./src/components/GlassCard";
 import { useAppStore } from "./src/store";
 import { useServerEvents } from "./src/transport/useServerEvents";
-import { startScenario, resetScenario } from "./src/transport/api";
-import { DEMO_SCENARIO } from "./src/config";
 import { colors, radius, space, type } from "./src/theme";
 
 function Screen() {
@@ -17,7 +15,6 @@ function Screen() {
 
   const mode = useAppStore((s) => s.mode);
   const connected = useAppStore((s) => s.connected);
-  const scenarioActive = useAppStore((s) => s.scenarioActive);
   const red = mode === "red";
   const accent = red ? colors.red : colors.green;
 
@@ -65,23 +62,6 @@ function Screen() {
         <Text style={[styles.orbStatus, { color: red ? colors.red : colors.label }]}>
           {red ? "Drone-like signature" : "Listening — clear"}
         </Text>
-
-        <View style={styles.controls}>
-          <Pressable
-            onPress={() => startScenario(DEMO_SCENARIO)}
-            style={({ pressed }) => [styles.ctrlBtn, styles.ctrlPrimary, pressed && styles.pressed]}
-          >
-            <Text style={styles.ctrlPrimaryText}>
-              {scenarioActive ? "Restart scenario" : "Run scenario"}
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => resetScenario()}
-            style={({ pressed }) => [styles.ctrlBtn, styles.ctrlGhost, pressed && styles.pressed]}
-          >
-            <Text style={styles.ctrlGhostText}>Reset</Text>
-          </Pressable>
-        </View>
       </View>
 
       <View style={styles.threatSection}>
@@ -131,20 +111,6 @@ const styles = StyleSheet.create({
   orbSection: { alignItems: "center", justifyContent: "center", gap: 4, paddingVertical: space.xs },
   orbStatus: { ...type.title3, marginTop: 2 },
 
-  controls: { flexDirection: "row", gap: space.sm, marginTop: space.sm },
-  ctrlBtn: {
-    height: 40,
-    borderRadius: radius.pill,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 22,
-  },
-  ctrlPrimary: { backgroundColor: colors.white },
-  ctrlPrimaryText: { ...type.subhead, fontWeight: "700", color: "#0B0B0D" },
-  ctrlGhost: { borderWidth: 1, borderColor: colors.hairlineStrong },
-  ctrlGhostText: { ...type.subhead, fontWeight: "600", color: colors.label },
-  pressed: { opacity: 0.6 },
-
-  threatSection: { paddingVertical: space.xs, gap: space.sm },
+  threatSection: { paddingVertical: space.xs, gap: space.sm, marginTop: space.lg },
   trailSection: { paddingBottom: space.md, paddingTop: space.xs },
 });
