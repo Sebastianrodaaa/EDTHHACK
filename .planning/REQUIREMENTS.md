@@ -9,54 +9,54 @@ Requirements for the initial demo release (full fused alert flow, simulated end-
 
 ### Acoustic Detection
 
-- [ ] **ACO-01**: The acoustic node continuously samples a (simulated) audio stream and windows it into frames
-- [ ] **ACO-02**: The system extracts spectral features and classifies each window as drone-like vs not, with a 0.0–1.0 confidence
-- [ ] **ACO-03**: Temporal/SNR-aware gating suppresses spurious detections (confidence must persist over N windows before triggering downstream)
-- [ ] **ACO-04**: Acoustic detections are emitted as structured events over the WebSocket backbone
-- [ ] **ACO-05**: The acoustic input sits behind a swappable adapter (simulated now, real Raspberry Pi mic later)
+- [x] **ACO-01**: The acoustic node continuously samples a (simulated) audio stream and windows it into frames
+- [x] **ACO-02**: The system extracts spectral features and classifies each window as drone-like vs not, with a 0.0–1.0 confidence
+- [x] **ACO-03**: Temporal/SNR-aware gating suppresses spurious detections (confidence must persist over N windows before triggering downstream)
+- [x] **ACO-04**: Acoustic detections are emitted as structured events over the WebSocket backbone
+- [x] **ACO-05**: The acoustic input sits behind a swappable adapter (simulated now, real Raspberry Pi mic later)
 
 ### Vision Confirmation
 
-- [ ] **VIS-01**: A qualifying acoustic detection triggers the vision confirmation pipeline (vision does not run continuously)
-- [ ] **VIS-02**: The vision layer classifies the POV frame via a pretrained model and returns a label + 0.0–1.0 confidence
-- [ ] **VIS-03**: Vision results are emitted as structured events over the WebSocket backbone, causally linked to the triggering acoustic event
-- [ ] **VIS-04**: The POV video input sits behind a swappable adapter (simulated frames now, Meta glasses later) with a CV mock mode for offline/demo reliability
+- [x] **VIS-01**: A qualifying acoustic detection triggers the vision confirmation pipeline (vision does not run continuously)
+- [x] **VIS-02**: The vision layer classifies the POV frame via a pretrained model and returns a label + 0.0–1.0 confidence
+- [x] **VIS-03**: Vision results are emitted as structured events over the WebSocket backbone, causally linked to the triggering acoustic event
+- [x] **VIS-04**: The POV video input sits behind a swappable adapter (simulated frames now, Meta glasses later) with a CV mock mode for offline/demo reliability
 
 ### Sensor Fusion
 
-- [ ] **FUS-01**: Late fusion combines acoustic + visual confidence into a calibrated fused confidence
-- [ ] **FUS-02**: Fused confidence maps to a 4-level threat enum (MONITOR → CAUTION → ALERT → CRITICAL) with configurable thresholds
-- [ ] **FUS-03**: Every fusion event includes the per-source breakdown (acoustic, vision, fused)
-- [ ] **FUS-04**: Fusion degrades gracefully to an acoustic-only track when vision is unavailable/low-confidence (threat level capped, state labeled "ACOUSTIC ONLY")
+- [x] **FUS-01**: Late fusion combines acoustic + visual confidence into a calibrated fused confidence
+- [x] **FUS-02**: Fused confidence maps to a 4-level threat enum (MONITOR → CAUTION → ALERT → CRITICAL) with configurable thresholds
+- [x] **FUS-03**: Every fusion event includes the per-source breakdown (acoustic, vision, fused)
+- [x] **FUS-04**: Fusion degrades gracefully to an acoustic-only track when vision is unavailable/low-confidence (threat level capped, state labeled "ACOUSTIC ONLY")
 
 ### Escalation & Human-in-the-Loop
 
-- [ ] **ESC-01**: An escalation state machine advances the threat through 4 levels, driven by fusion events
-- [ ] **ESC-02**: Each level presents a specific operator recommendation (monitor → request secondary confirmation → alert squad → prepare countermeasure options)
-- [ ] **ESC-03**: Advancing an escalation requires explicit human confirmation; the system never auto-engages
-- [ ] **ESC-04**: The operator can stand down / cancel at any level, resetting the system to monitoring
-- [ ] **ESC-05**: Operator confirmations and stand-downs are recorded to an append-only audit log (action, level, timestamp)
+- [x] **ESC-01**: An escalation state machine advances the threat through 4 levels, driven by fusion events
+- [x] **ESC-02**: Each level presents a specific operator recommendation (monitor → request secondary confirmation → alert squad → prepare countermeasure options)
+- [x] **ESC-03**: Advancing an escalation requires explicit human confirmation; the system never auto-engages
+- [x] **ESC-04**: The operator can stand down / cancel at any level, resetting the system to monitoring
+- [x] **ESC-05**: Operator confirmations and stand-downs are recorded to an append-only audit log (action, level, timestamp)
 
 ### Target Tracking
 
-- [ ] **TRK-01**: On threat confirmation, a target track is initiated with a track ID and last-known position
-- [ ] **TRK-02**: Simulated target position updates stream over WebSocket and drive the operator mini-map
-- [ ] **TRK-03**: Track lifecycle states (acquiring → tracking → lost) are reflected to the operator
+- [x] **TRK-01**: On threat confirmation, a target track is initiated with a track ID and last-known position
+- [x] **TRK-02**: Simulated target position updates stream over WebSocket and drive the operator mini-map
+- [~] **TRK-03**: Track lifecycle states reflected to operator (acquiring → tracking ✓; `lost`/`terminated` modeled in schema but not exercised by the current sim)
 
 ### Operator Interface
 
-- [ ] **UI-01**: The C2 app displays the live threat level + fused confidence (existing Skia orb extended to 4 threat states)
-- [ ] **UI-02**: The C2 app shows subsystem status indicators (acoustic, vision, fusion, backend)
-- [ ] **UI-03**: The agent reasoning trail renders the live evidence chain from server events (replacing the scripted cascade)
-- [ ] **UI-04**: Escalating recommendation cards present confirm + stand-down controls
-- [ ] **UI-05**: A new escalation alerts the operator (haptics + sound/visual)
-- [ ] **UI-06**: A mini-map shows the simulated target's position and heading
+- [x] **UI-01**: The C2 app displays the live threat level + fused confidence (existing Skia orb extended to 4 threat states)
+- [x] **UI-02**: The C2 app shows subsystem status indicators (acoustic, vision, fusion, backend)
+- [x] **UI-03**: The agent reasoning trail renders the live evidence chain from server events (replacing the scripted cascade)
+- [x] **UI-04**: Escalating recommendation cards present confirm + stand-down controls
+- [~] **UI-05**: A new escalation alerts the operator (visual: orb red + threat-colored badge/cards ✓; haptics + sound deferred — needs `expo-haptics` native dep + dev-build rebuild)
+- [x] **UI-06**: A mini-map shows the simulated target's position and heading
 
 ### Backbone & Demo
 
-- [ ] **SYS-01**: A FastAPI + WebSocket gateway broadcasts events to connected clients with a replay/ring buffer + state-sync on reconnect
-- [ ] **SYS-02**: A scripted scenario player drives a deterministic, repeatable end-to-end demo run
-- [ ] **SYS-03**: A full simulated scenario runs start to finish (acoustic → vision → fusion → escalation → human confirmation → tracking)
+- [x] **SYS-01**: A FastAPI + WebSocket gateway broadcasts events to connected clients with a replay/ring buffer + state-sync on reconnect
+- [x] **SYS-02**: A scripted scenario player drives a deterministic, repeatable end-to-end demo run
+- [x] **SYS-03**: A full simulated scenario runs start to finish (acoustic → vision → fusion → escalation → human confirmation → tracking)
 
 ## v2 Requirements
 
@@ -111,42 +111,43 @@ Populated during roadmap creation. Each v1 requirement maps to exactly one phase
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ACO-01 | Phase 1 | Pending |
-| ACO-02 | Phase 1 | Pending |
-| ACO-03 | Phase 1 | Pending |
-| ACO-04 | Phase 1 | Pending |
-| ACO-05 | Phase 1 | Pending |
-| VIS-01 | Phase 2 | Pending |
-| VIS-02 | Phase 2 | Pending |
-| VIS-03 | Phase 2 | Pending |
-| VIS-04 | Phase 2 | Pending |
-| FUS-01 | Phase 3 | Pending |
-| FUS-02 | Phase 3 | Pending |
-| FUS-03 | Phase 3 | Pending |
-| FUS-04 | Phase 3 | Pending |
-| ESC-01 | Phase 3 | Pending |
-| ESC-02 | Phase 3 | Pending |
-| ESC-03 | Phase 3 | Pending |
-| ESC-04 | Phase 3 | Pending |
-| ESC-05 | Phase 3 | Pending |
-| TRK-01 | Phase 5 | Pending |
-| TRK-02 | Phase 5 | Pending |
-| TRK-03 | Phase 5 | Pending |
-| UI-01 | Phase 4 | Pending |
-| UI-02 | Phase 4 | Pending |
-| UI-03 | Phase 4 | Pending |
-| UI-04 | Phase 4 | Pending |
-| UI-05 | Phase 4 | Pending |
-| UI-06 | Phase 4 | Pending |
-| SYS-01 | Phase 1 | Pending |
-| SYS-02 | Phase 1 | Pending |
-| SYS-03 | Phase 5 | Pending |
+| ACO-01 | Phase 1 | Done |
+| ACO-02 | Phase 1 | Done |
+| ACO-03 | Phase 1 | Done |
+| ACO-04 | Phase 1 | Done |
+| ACO-05 | Phase 1 | Done |
+| VIS-01 | Phase 2 | Done |
+| VIS-02 | Phase 2 | Done |
+| VIS-03 | Phase 2 | Done |
+| VIS-04 | Phase 2 | Done |
+| FUS-01 | Phase 3 | Done |
+| FUS-02 | Phase 3 | Done |
+| FUS-03 | Phase 3 | Done |
+| FUS-04 | Phase 3 | Done |
+| ESC-01 | Phase 3 | Done |
+| ESC-02 | Phase 3 | Done |
+| ESC-03 | Phase 3 | Done |
+| ESC-04 | Phase 3 | Done |
+| ESC-05 | Phase 3 | Done |
+| TRK-01 | Phase 5 | Done |
+| TRK-02 | Phase 5 | Done |
+| TRK-03 | Phase 5 | Partial (acquiring/tracking ✓, lost not exercised) |
+| UI-01 | Phase 4 | Done |
+| UI-02 | Phase 4 | Done |
+| UI-03 | Phase 4 | Done |
+| UI-04 | Phase 4 | Done |
+| UI-05 | Phase 4 | Partial (visual ✓, haptics/sound deferred) |
+| UI-06 | Phase 4 | Done |
+| SYS-01 | Phase 1 | Done |
+| SYS-02 | Phase 1 | Done |
+| SYS-03 | Phase 5 | Done |
 
 **Coverage:**
 - v1 requirements: 30 total
+- Fully delivered: 28 ✓
+- Partial: 2 (UI-05 haptics/sound, TRK-03 lost-state) — visual/core paths done
 - Mapped to phases: 30 ✓
-- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-14*
-*Last updated: 2026-06-14 after initialization*
+*Last updated: 2026-06-14 after milestone v1 build (all 5 phases shipped)*
