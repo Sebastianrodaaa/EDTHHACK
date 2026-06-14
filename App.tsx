@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { AcousticOrb } from "./src/components/AcousticOrb";
@@ -25,6 +25,11 @@ function Screen() {
     <SafeAreaView style={styles.safe} edges={["top", "left", "right", "bottom"]}>
       <StatusBar style="light" />
 
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
       <View style={styles.header}>
         <GlassCard radius={radius.pill} style={styles.pill}>
           <View style={styles.pillInner}>
@@ -87,6 +92,7 @@ function Screen() {
       <View style={styles.trailSection}>
         <ReasoningTrail />
       </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -100,7 +106,9 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg, paddingHorizontal: space.lg },
+  safe: { flex: 1, backgroundColor: colors.bg },
+  scroll: { flex: 1 },
+  scrollContent: { paddingHorizontal: space.lg, paddingBottom: space.xl },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -138,5 +146,5 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.6 },
 
   threatSection: { paddingVertical: space.xs, gap: space.sm },
-  trailSection: { flex: 1, paddingBottom: space.md, paddingTop: space.xs },
+  trailSection: { paddingBottom: space.md, paddingTop: space.xs },
 });

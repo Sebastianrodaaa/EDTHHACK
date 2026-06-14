@@ -3,7 +3,6 @@ import {
   LayoutAnimation,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   UIManager,
@@ -98,11 +97,7 @@ export function ReasoningTrail() {
         <Text style={styles.count}>{tasks.length} stages</Text>
       </View>
 
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={styles.scrollContent}>
         {tasks.map((task) => (
           <TaskRow
             key={task.id}
@@ -113,7 +108,7 @@ export function ReasoningTrail() {
             onToggleSub={toggleSub}
           />
         ))}
-      </ScrollView>
+      </View>
     </GlassCard>
   );
 }
@@ -226,7 +221,7 @@ function StatusBadge({ status }: { status: Status }) {
 }
 
 const styles = StyleSheet.create({
-  panel: { flex: 1 },
+  panel: {},
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -240,7 +235,6 @@ const styles = StyleSheet.create({
   title: { ...type.headline, color: colors.label },
   count: { ...type.footnote, color: colors.secondary },
 
-  scroll: { flex: 1 },
   scrollContent: { paddingVertical: space.sm, paddingHorizontal: space.sm },
 
   taskBlock: { marginBottom: 2 },
