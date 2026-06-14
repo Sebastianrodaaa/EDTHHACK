@@ -11,6 +11,8 @@ import logging
 
 from fastapi import APIRouter, Request
 
+from core import reasoning
+from core.reasoning import Stage
 from models import OperatorAction
 
 log = logging.getLogger("gateway.routes")
@@ -46,7 +48,9 @@ async def list_scenarios(request: Request):
 @router.post("/scenario/{scenario_id}/start")
 async def start_scenario(scenario_id: str, request: Request):
     ctx = _ctx(request)
-    ctx.state.reset()
+    ctx.reset_pipeline()
+    # Seed the reasoning trail in its listening state so the app shows context.
+    ctx.state.reasoning_steps = reasoning.for_stage(Stage.LISTENING)
     await ctx.manager.broadcast(ctx.state.snapshot().model_dump())
     ok = await ctx.engine.start(scenario_id)
     if not ok:
@@ -65,9 +69,14 @@ async def stop_scenario(request: Request):
 async def reset_scenario(request: Request):
     ctx = _ctx(request)
     await ctx.engine.stop()
-    ctx.state.reset()
+    ctx.reset_pipeline()
     await ctx.manager.broadcast(ctx.state.snapshot().model_dump())
     return {"ok": True}
+
+
+@router.get("/audit")
+async def get_audit(request: Request):
+    return {"audit_log": _ctx(request).escalation.audit_log}
 
 
 @router.post("/operator/action")
