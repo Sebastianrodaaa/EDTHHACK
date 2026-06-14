@@ -4,6 +4,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { AcousticOrb } from "./src/components/AcousticOrb";
 import { ReasoningTrail } from "./src/components/ReasoningTrail";
 import { ThreatPanel } from "./src/components/ThreatPanel";
+import { TrackingOverlay } from "./src/components/TrackingOverlay";
 import { GlassCard } from "./src/components/GlassCard";
 import { useAppStore } from "./src/store";
 import { useServerEvents } from "./src/transport/useServerEvents";
@@ -79,6 +80,7 @@ function Screen() {
       </View>
 
       <View style={styles.threatSection}>
+        <TrackingOverlay />
         <ThreatPanel />
       </View>
 
@@ -135,6 +137,6 @@ const styles = StyleSheet.create({
   ctrlGhostText: { ...type.subhead, fontWeight: "600", color: colors.label },
   pressed: { opacity: 0.6 },
 
-  threatSection: { paddingVertical: space.xs },
+  threatSection: { paddingVertical: space.xs, gap: space.sm },
   trailSection: { flex: 1, paddingBottom: space.md, paddingTop: space.xs },
 });

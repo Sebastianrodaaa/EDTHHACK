@@ -25,6 +25,7 @@ from core.escalation import EscalationManager
 from core.event_bus import EventBus
 from core.fusion import FusionEngine
 from core.state import SystemState
+from core.tracker import Tracker
 from core.vision_worker import VisionWorker
 from gateway.routes import router
 from gateway.ws import ConnectionManager
@@ -62,22 +63,30 @@ class AppContext:
         self.fusion = FusionEngine(
             self.bus, self.state, track_plan_provider=lambda: self.engine.active_track_plan
         )
-        self.escalation = EscalationManager(self.bus, self.state, self.fusion)
+        self.tracker = Tracker(
+            self.bus, self.state, track_plan_provider=lambda: self.engine.active_track_plan
+        )
+        self.escalation = EscalationManager(
+            self.bus, self.state, self.fusion, self.tracker
+        )
         self.manager = ConnectionManager(self.bus, self.state)
 
     def start(self) -> None:
         self.manager.start_pumps()
         self.vision_worker.start()
         self.fusion.start()
+        self.tracker.start()
 
     async def shutdown(self) -> None:
         await self.engine.stop()
         await self.vision_worker.stop()
         await self.fusion.stop()
+        await self.tracker.stop()
         await self.manager.stop_pumps()
 
     def reset_pipeline(self) -> None:
         self.fusion.reset()
+        self.tracker.reset()
         self.state.reset()
 
     async def handle_operator_action(self, action: OperatorAction) -> dict:

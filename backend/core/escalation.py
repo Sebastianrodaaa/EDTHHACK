@@ -13,16 +13,19 @@ import logging
 from core.event_bus import EventBus
 from core.fusion import FusionEngine, recommend
 from core.state import SystemState
+from core.tracker import Tracker
 from models import OperatorAction, now_iso
 
 log = logging.getLogger("core.escalation")
 
 
 class EscalationManager:
-    def __init__(self, bus: EventBus, state: SystemState, fusion: FusionEngine) -> None:
+    def __init__(self, bus: EventBus, state: SystemState, fusion: FusionEngine,
+                 tracker: Tracker | None = None) -> None:
         self.bus = bus
         self.state = state
         self.fusion = fusion
+        self.tracker = tracker
         self.audit_log: list[dict] = []
 
     def _audit(self, action: OperatorAction, result: str) -> None:
@@ -41,6 +44,8 @@ class EscalationManager:
 
         if action.action == "stand_down":
             self.fusion.reset()
+            if self.tracker is not None:
+                self.tracker.reset()
             self.state.reset()
             self._audit(action, "threat_cleared")
             await self.bus.publish("state_snapshot", self.state.snapshot().model_dump())

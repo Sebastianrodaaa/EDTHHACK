@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-06-14)
 
 **Core value:** When a drone-like sound is detected, the operator gets a fused (sound + vision) confidence-scored threat assessment and a clear, escalating recommendation — fast, with the human always in control of the final action.
-**Current focus:** Phase 5 — Target Tracking + Demo Hardening
+**Current focus:** Milestone v1 COMPLETE — all 5 phases shipped
 
 ## Current Position
 
-Phase: 5 of 5 (Target Tracking + Demo Hardening)
-Plan: Phases 1–4 complete (smoke + live transport PASS)
-Status: Phases 1–4 done — building Phase 5
-Last activity: 2026-06-14 — Phase 4 mobile C2 integration built & verified (live WS transport)
+Phase: 5 of 5 complete (Target Tracking + Demo Hardening)
+Plan: All phases complete (smoke 1/2/3/5 PASS + live transport PASS)
+Status: Milestone v1 complete — end-to-end simulated demo working
+Last activity: 2026-06-14 — Phase 5 tracking + false-alarm + demo runbook built & verified
 
-Progress: [████████░░] 80%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 

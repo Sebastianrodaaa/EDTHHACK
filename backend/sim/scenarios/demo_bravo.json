@@ -1,0 +1,28 @@
+{
+  "id": "demo-bravo",
+  "name": "False alarm — bird disconfirmed by vision",
+  "description": "A drone-like acoustic signature triggers the vision pipeline, but the POV camera classifies the object as a bird. Fusion downweights the visual, threat stays low, and the system stands itself back down — no squad alert.",
+  "acoustic": [
+    { "t": 0.0, "label": "ambient", "intensity": 0.10, "drone_like": false },
+    { "t": 1.0, "label": "wind", "intensity": 0.25, "drone_like": false },
+    { "t": 2.0, "label": "drone", "intensity": 0.55, "drone_like": true },
+    { "t": 2.8, "label": "drone", "intensity": 0.60, "drone_like": true },
+    { "t": 3.6, "label": "drone", "intensity": 0.52, "drone_like": true },
+    { "t": 4.6, "label": "ambient", "intensity": 0.18, "drone_like": false },
+    { "t": 5.6, "label": "ambient", "intensity": 0.12, "drone_like": false }
+  ],
+  "vision": {
+    "sequence": [
+      {
+        "classification": "bird",
+        "confidence": 0.74,
+        "bounding_box": { "x": 0.55, "y": 0.30, "w": 0.05, "h": 0.04 }
+      }
+    ],
+    "default": {
+      "classification": "bird",
+      "confidence": 0.70,
+      "bounding_box": null
+    }
+  }
+}
