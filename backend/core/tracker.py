@@ -99,7 +99,19 @@ class Tracker:
                 rng = max(MIN_RANGE_M, rng - speed * TICK_S)
                 bearing += 2.5 * math.sin(tick * 0.6)
                 tick += 1
-            log.info("track %s within close range (%.0fm)", track_id, rng)
+
+            # Target closed to minimum range and passed — track is lost.
+            lost = TrackUpdate(
+                track_id=track_id, state="lost",
+                bearing_deg=round(bearing % 360, 1),
+                range_m=round(rng, 1), speed_mps=round(speed, 1),
+                confidence=0.4,
+            )
+            await self.bus.publish("track_update", lost.model_dump())
+            if self.state.tracking is not None:
+                self.state.tracking.state = "lost"
+                self.state.tracking.confidence = 0.4
+            log.info("track %s lost at close range (%.0fm)", track_id, rng)
         except asyncio.CancelledError:
             log.info("track %s terminated", track_id)
             raise

@@ -22,13 +22,13 @@ recommendation, end-to-end, simulated, repeatable from one button.
 
 ## Requirements Coverage
 
-- **28 / 30** v1 requirements fully delivered.
-- **2 partial:**
+- **29 / 30** v1 requirements fully delivered.
+- **1 partial:**
   - **UI-05** — escalation alerting: visual is done (orb red + threat-colored
     badge/recommendation cards). Haptics + sound deferred (needs `expo-haptics`,
     a native dependency requiring a dev-build rebuild).
-  - **TRK-03** — track states: `acquiring`/`tracking` exercised; `lost`/
-    `terminated` modeled in the schema but not produced by the current sim.
+- **TRK-03 closed post-audit:** the tracker now emits a `lost` lifecycle state
+  when a closing target passes through minimum range.
 
 ## Tech Debt / Notes
 

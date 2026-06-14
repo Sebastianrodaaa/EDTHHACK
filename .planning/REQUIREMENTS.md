@@ -41,7 +41,7 @@ Requirements for the initial demo release (full fused alert flow, simulated end-
 
 - [x] **TRK-01**: On threat confirmation, a target track is initiated with a track ID and last-known position
 - [x] **TRK-02**: Simulated target position updates stream over WebSocket and drive the operator mini-map
-- [~] **TRK-03**: Track lifecycle states reflected to operator (acquiring → tracking ✓; `lost`/`terminated` modeled in schema but not exercised by the current sim)
+- [x] **TRK-03**: Track lifecycle states reflected to operator (acquiring → tracking → lost, exercised by the sim when a closing target passes through minimum range)
 
 ### Operator Interface
 
@@ -131,7 +131,7 @@ Populated during roadmap creation. Each v1 requirement maps to exactly one phase
 | ESC-05 | Phase 3 | Done |
 | TRK-01 | Phase 5 | Done |
 | TRK-02 | Phase 5 | Done |
-| TRK-03 | Phase 5 | Partial (acquiring/tracking ✓, lost not exercised) |
+| TRK-03 | Phase 5 | Done |
 | UI-01 | Phase 4 | Done |
 | UI-02 | Phase 4 | Done |
 | UI-03 | Phase 4 | Done |
@@ -144,8 +144,8 @@ Populated during roadmap creation. Each v1 requirement maps to exactly one phase
 
 **Coverage:**
 - v1 requirements: 30 total
-- Fully delivered: 28 ✓
-- Partial: 2 (UI-05 haptics/sound, TRK-03 lost-state) — visual/core paths done
+- Fully delivered: 29 ✓
+- Partial: 1 (UI-05 — visual alerting done; haptics/sound deferred, needs native rebuild)
 - Mapped to phases: 30 ✓
 
 ---
