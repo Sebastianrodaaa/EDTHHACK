@@ -45,6 +45,7 @@ yarn-error.*
 
 # python backend
 backend/.venv/
+vision/.venv/
 **/__pycache__/
 *.pyc
 .pytest_cache/
